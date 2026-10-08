@@ -1,0 +1,67 @@
+package com.example.facultyleave;
+
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class BalanceActivity extends AppCompatActivity {
+
+    TextView balanceText;
+
+    SharedPreferences preferences;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_balance);
+
+        balanceText =
+                findViewById(R.id.balanceText);
+
+        preferences =
+                getSharedPreferences(
+                        "LeaveData",
+                        MODE_PRIVATE
+                );
+
+        showBalance();
+    }
+
+    private void showBalance() {
+
+        int casual =
+                preferences.getInt(
+                        "casualBalance",
+                        12
+                );
+
+        int medical =
+                preferences.getInt(
+                        "medicalBalance",
+                        10
+                );
+
+        int duty =
+                preferences.getInt(
+                        "dutyBalance",
+                        15
+                );
+
+        balanceText.setText(
+                "Casual Leave : "
+                        + casual
+                        + " days\n\n"
+
+                        + "Medical Leave : "
+                        + medical
+                        + " days\n\n"
+
+                        + "Duty Leave : "
+                        + duty
+                        + " days"
+        );
+    }
+}

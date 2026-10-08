@@ -1,0 +1,152 @@
+package com.example.patientclinic;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.app.AlertDialog;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class DashboardActivity extends AppCompatActivity {
+
+    TextView tvGreeting, tvAppointment;
+    ListView listDoctors;
+
+    String[] doctors = {
+            "Dr. Anil Kumar - Cardiologist",
+            "Dr. Meera Nair - Dermatologist",
+            "Dr. Rahul Menon - Neurologist",
+            "Dr. Priya Joseph - Pediatrician",
+            "Dr. Arun Das - Orthopedic Specialist"
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_dashboard);
+
+        tvGreeting = findViewById(R.id.tvGreeting);
+        tvAppointment = findViewById(R.id.tvAppointment);
+        listDoctors = findViewById(R.id.listDoctors);
+
+        // Retrieve patient name from SharedPreferences
+        SharedPreferences preferences =
+                getSharedPreferences("PatientData", MODE_PRIVATE);
+
+        String patientName =
+                preferences.getString("patient_name", "Patient");
+
+        // Retrieve bundled data
+        int age = getIntent().getIntExtra("patient_age", 0);
+
+        String tokenDate =
+                getIntent().getStringExtra("token_date");
+
+        // Dynamic greeting
+        tvGreeting.setText("Welcome, " + patientName + "!");
+
+        tvAppointment.setText(
+                "Age: " + age +
+                "\nPreferred Token/Date: " + tokenDate
+        );
+
+        // Android Adapter
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_list_item_1,
+                        doctors
+                );
+
+        listDoctors.setAdapter(adapter);
+
+        // Normal click
+        listDoctors.setOnItemClickListener(
+                (parent, view, position, id) -> {
+
+                    String selectedDoctor = doctors[position];
+
+                    new AlertDialog.Builder(DashboardActivity.this)
+                            .setTitle("Doctor Selected")
+                            .setMessage(
+                                    "Would you like to request an appointment with\n\n"
+                                            + selectedDoctor + "?"
+                            )
+                            .setPositiveButton("Confirm",
+                                    (dialog, which) -> {
+
+                                        Toast.makeText(
+                                                DashboardActivity.this,
+                                                "Appointment request sent to "
+                                                        + selectedDoctor,
+                                                Toast.LENGTH_LONG
+                                        ).show();
+                                    })
+                            .setNegativeButton("Cancel", null)
+                            .show();
+                }
+        );
+
+        // Enable Context Menu
+        registerForContextMenu(listDoctors);
+    }
+
+    // Create Context Menu
+    @Override
+    public void onCreateContextMenu(
+            ContextMenu menu,
+            View v,
+            ContextMenu.ContextMenuInfo menuInfo) {
+
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        menu.setHeaderTitle("Hospital Options");
+
+        menu.add(0, 1, 0, "Get Hospital Route");
+    }
+
+    // Handle Context Menu
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+
+        if (item.getItemId() == 1) {
+
+            // Implicit Intent to Google Maps
+            Uri location = Uri.parse(
+                    "geo:0,0?q=Hospital+Thiruvananthapuram"
+            );
+
+            Intent intent =
+                    new Intent(Intent.ACTION_VIEW, location);
+
+            try {
+                startActivity(intent);
+            } catch (Exception e) {
+
+                // If Maps is not available, open browser
+                Uri webUri = Uri.parse(
+                        "https://www.google.com/maps/search/?api=1&query=Hospital+Thiruvananthapuram"
+                );
+
+                Intent browserIntent =
+                        new Intent(Intent.ACTION_VIEW, webUri);
+
+                startActivity(browserIntent);
+            }
+
+            return true;
+        }
+
+        return super.onContextItemSelected(item);
+    }
+}

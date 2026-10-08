@@ -1,0 +1,389 @@
+package com.example.markscard;
+
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity {
+
+    Spinner studentSpinner;
+
+    EditText maths;
+    EditText physics;
+    EditText chemistry;
+    EditText computer;
+
+    TableLayout reportTable;
+
+    SharedPreferences preferences;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+
+        studentSpinner = findViewById(R.id.studentSpinner);
+
+        maths = findViewById(R.id.maths);
+        physics = findViewById(R.id.physics);
+        chemistry = findViewById(R.id.chemistry);
+        computer = findViewById(R.id.computer);
+
+        reportTable = findViewById(R.id.reportTable);
+
+        // SharedPreferences
+        preferences = getSharedPreferences(
+                "MarksData",
+                MODE_PRIVATE
+        );
+
+        // Student IDs
+        String[] studentIds = {
+                "Select Student",
+                "ST001",
+                "ST002",
+                "ST003",
+                "ST004"
+        };
+
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_spinner_item,
+                        studentIds
+                );
+
+        adapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+
+        studentSpinner.setAdapter(adapter);
+    }
+
+
+    // Create Options Menu
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(
+                R.menu.options_menu,
+                menu
+        );
+
+        return true;
+    }
+
+
+    // Handle menu selection
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (item.getItemId() == R.id.compileReport) {
+
+            compileReport();
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    private void compileReport() {
+
+        // Check student selection
+
+        if (studentSpinner.getSelectedItemPosition() == 0) {
+
+            Toast.makeText(
+                    this,
+                    "Please select a student",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+
+        // Validate marks
+
+        if (!validateMarks(maths) ||
+                !validateMarks(physics) ||
+                !validateMarks(chemistry) ||
+                !validateMarks(computer)) {
+
+            return;
+        }
+
+
+        // Get marks
+
+        int mathsMark =
+                Integer.parseInt(
+                        maths.getText().toString()
+                );
+
+        int physicsMark =
+                Integer.parseInt(
+                        physics.getText().toString()
+                );
+
+        int chemistryMark =
+                Integer.parseInt(
+                        chemistry.getText().toString()
+                );
+
+        int computerMark =
+                Integer.parseInt(
+                        computer.getText().toString()
+                );
+
+
+        // Calculate total
+
+        int total =
+                mathsMark +
+                physicsMark +
+                chemistryMark +
+                computerMark;
+
+
+        // Calculate percentage
+
+        double percentage =
+                total / 4.0;
+
+
+        // Calculate grade
+
+        String grade =
+                calculateGrade(percentage);
+
+
+        // Get student ID
+
+        String studentId =
+                studentSpinner
+                        .getSelectedItem()
+                        .toString();
+
+
+        // Save report
+
+        SharedPreferences.Editor editor =
+                preferences.edit();
+
+        editor.putString(
+                "studentId",
+                studentId
+        );
+
+        editor.putInt(
+                "maths",
+                mathsMark
+        );
+
+        editor.putInt(
+                "physics",
+                physicsMark
+        );
+
+        editor.putInt(
+                "chemistry",
+                chemistryMark
+        );
+
+        editor.putInt(
+                "computer",
+                computerMark
+        );
+
+        editor.putInt(
+                "total",
+                total
+        );
+
+        editor.putFloat(
+                "percentage",
+                (float) percentage
+        );
+
+        editor.putString(
+                "grade",
+                grade
+        );
+
+        editor.apply();
+
+
+        // Display report
+
+        displayReport(
+                studentId,
+                mathsMark,
+                physicsMark,
+                chemistryMark,
+                computerMark,
+                total,
+                percentage,
+                grade
+        );
+
+        Toast.makeText(
+                this,
+                "Report compiled and saved",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+
+
+    private boolean validateMarks(EditText field) {
+
+        String value =
+                field.getText().toString().trim();
+
+        if (value.isEmpty()) {
+
+            field.setError(
+                    "Enter marks"
+            );
+
+            return false;
+        }
+
+        int marks =
+                Integer.parseInt(value);
+
+        if (marks < 0 || marks > 100) {
+
+            field.setError(
+                    "Marks must be between 0 and 100"
+            );
+
+            return false;
+        }
+
+        return true;
+    }
+
+
+    private String calculateGrade(
+            double percentage) {
+
+        if (percentage >= 90) {
+            return "A+";
+        } else if (percentage >= 80) {
+            return "A";
+        } else if (percentage >= 70) {
+            return "B";
+        } else if (percentage >= 60) {
+            return "C";
+        } else if (percentage >= 50) {
+            return "D";
+        } else {
+            return "F";
+        }
+    }
+
+
+    private void displayReport(
+            String studentId,
+            int mathsMark,
+            int physicsMark,
+            int chemistryMark,
+            int computerMark,
+            int total,
+            double percentage,
+            String grade) {
+
+        // Remove old rows
+
+        reportTable.removeViews(
+                1,
+                reportTable.getChildCount() - 1
+        );
+
+
+        addRow(
+                "Mathematics",
+                String.valueOf(mathsMark)
+        );
+
+        addRow(
+                "Physics",
+                String.valueOf(physicsMark)
+        );
+
+        addRow(
+                "Chemistry",
+                String.valueOf(chemistryMark)
+        );
+
+        addRow(
+                "Computer Science",
+                String.valueOf(computerMark)
+        );
+
+        addRow(
+                "TOTAL",
+                String.valueOf(total)
+        );
+
+        addRow(
+                "PERCENTAGE",
+                String.format("%.2f%%", percentage)
+        );
+
+        addRow(
+                "GRADE",
+                grade
+        );
+    }
+
+
+    private void addRow(
+            String subject,
+            String marks) {
+
+        TableRow row =
+                new TableRow(this);
+
+        TextView subjectText =
+                new TextView(this);
+
+        TextView marksText =
+                new TextView(this);
+
+        subjectText.setText(subject);
+        marksText.setText(marks);
+
+        subjectText.setTextSize(18);
+        marksText.setTextSize(18);
+
+        subjectText.setPadding(
+                20, 15, 20, 15
+        );
+
+        marksText.setPadding(
+                20, 15, 20, 15
+        );
+
+        row.addView(subjectText);
+        row.addView(marksText);
+
+        reportTable.addView(row);
+    }
+}

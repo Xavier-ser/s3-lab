@@ -1,0 +1,218 @@
+package com.example.alumninetwork;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+public class DashboardActivity extends AppCompatActivity {
+
+    TextView tvGreeting, tvDetails;
+    ListView listChapters;
+
+    // Mentorship tracks and networking chapters
+    String[] chapters = {
+            "Software Engineering Mentorship",
+            "Data Science & AI Chapter",
+            "Entrepreneurship Network",
+            "Cybersecurity Professionals",
+            "Cloud & DevOps Community",
+            "Higher Studies & Research"
+    };
+
+    // Chapter lead email addresses
+    String[] emails = {
+            "softwarelead@example.com",
+            "ailead@example.com",
+            "entrepreneurlead@example.com",
+            "securitylead@example.com",
+            "cloudlead@example.com",
+            "researchlead@example.com"
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_dashboard);
+
+        tvGreeting = findViewById(R.id.tvGreeting);
+        tvDetails = findViewById(R.id.tvDetails);
+        listChapters = findViewById(R.id.listChapters);
+
+        // Retrieve name from SharedPreferences
+        SharedPreferences preferences =
+                getSharedPreferences(
+                        "AlumniData",
+                        MODE_PRIVATE
+                );
+
+        String alumnusName =
+                preferences.getString(
+                        "alumnus_name",
+                        "Alumnus"
+                );
+
+        // Retrieve Bundle data
+        int graduationYear =
+                getIntent().getIntExtra(
+                        "graduation_year",
+                        0
+                );
+
+        String company =
+                getIntent().getStringExtra(
+                        "current_company"
+                );
+
+        // Dynamic greeting
+        tvGreeting.setText(
+                "Welcome, " + alumnusName + "!"
+        );
+
+        // Display alumni details
+        tvDetails.setText(
+                "Graduation Year: " + graduationYear +
+                "\nCurrent Company: " + company
+        );
+
+        // Create Android Adapter
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_list_item_1,
+                        chapters
+                );
+
+        // Attach adapter to ListView
+        listChapters.setAdapter(adapter);
+
+        // Normal click
+        listChapters.setOnItemClickListener(
+                (parent, view, position, id) -> {
+
+                    String selectedChapter =
+                            chapters[position];
+
+                    new AlertDialog.Builder(
+                            DashboardActivity.this
+                    )
+                            .setTitle("Join Alumni Chapter")
+                            .setMessage(
+                                    "Would you like to connect with\n\n"
+                                            + selectedChapter + "?"
+                            )
+                            .setPositiveButton(
+                                    "Confirm",
+                                    (dialog, which) -> {
+
+                                        Toast.makeText(
+                                                DashboardActivity.this,
+                                                "Connection request sent to "
+                                                        + selectedChapter,
+                                                Toast.LENGTH_LONG
+                                        ).show();
+                                    }
+                            )
+                            .setNegativeButton(
+                                    "Cancel",
+                                    null
+                            )
+                            .show();
+                }
+        );
+
+        // Enable Context Menu
+        registerForContextMenu(listChapters);
+    }
+
+    // Create Context Menu
+    @Override
+    public void onCreateContextMenu(
+            ContextMenu menu,
+            View v,
+            ContextMenu.ContextMenuInfo menuInfo) {
+
+        super.onCreateContextMenu(
+                menu,
+                v,
+                menuInfo
+        );
+
+        menu.setHeaderTitle("Chapter Options");
+
+        menu.add(
+                0,
+                1,
+                0,
+                "Email Chapter Lead"
+        );
+    }
+
+    // Handle Context Menu
+    @Override
+    public boolean onContextItemSelected(
+            MenuItem item) {
+
+        if (item.getItemId() == 1) {
+
+            // Get selected ListView item
+            AdapterView.AdapterContextMenuInfo info =
+                    (AdapterView.AdapterContextMenuInfo)
+                            item.getMenuInfo();
+
+            int position = info.position;
+
+            // Get corresponding chapter lead email
+            String email = emails[position];
+
+            // Implicit Intent to email application
+            Intent emailIntent =
+                    new Intent(
+                            Intent.ACTION_SENDTO
+                    );
+
+            emailIntent.setData(
+                    Uri.parse("mailto:" + email)
+            );
+
+            emailIntent.putExtra(
+                    Intent.EXTRA_SUBJECT,
+                    "Alumni Network Connection"
+            );
+
+            emailIntent.putExtra(
+                    Intent.EXTRA_TEXT,
+                    "Hello, I would like to connect with "
+                            + chapters[position]
+            );
+
+            try {
+
+                startActivity(emailIntent);
+
+            } catch (Exception e) {
+
+                Toast.makeText(
+                        this,
+                        "No email application found",
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+
+            return true;
+        }
+
+        return super.onContextItemSelected(item);
+    }
+}

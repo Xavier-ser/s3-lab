@@ -1,0 +1,159 @@
+package com.example.studentmarks;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.Spinner;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+
+public class ViewMarksActivity extends AppCompatActivity {
+
+    Spinner studentSpinner;
+
+    TextView nameText;
+    TextView internalText;
+    TextView externalText;
+    TextView totalText;
+
+    SharedPreferences preferences;
+
+    ArrayList<String> studentNames;
+
+    Button go_back;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_view_marks);
+
+        studentSpinner = findViewById(R.id.studentSpinner);
+
+        nameText = findViewById(R.id.nameText);
+        internalText = findViewById(R.id.internalText);
+        externalText = findViewById(R.id.externalText);
+        totalText = findViewById(R.id.totalText);
+
+        preferences = getSharedPreferences(
+                "StudentData",
+                MODE_PRIVATE
+        );
+
+        studentNames = new ArrayList<>();
+
+        // Get number of students
+        int count = preferences.getInt("count", 0);
+
+        // Load student names
+        for (int i = 0; i < count; i++) {
+
+            String studentName =
+                    preferences.getString(
+                            "name_" + i,
+                            ""
+                    );
+
+            studentNames.add(studentName);
+        }
+
+        // Adapter for Spinner
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_spinner_item,
+                        studentNames
+                );
+
+        adapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+
+        studentSpinner.setAdapter(adapter);
+
+        // When student is selected
+        studentSpinner.setOnItemSelectedListener(
+                new android.widget.AdapterView.OnItemSelectedListener() {
+
+                    @Override
+                    public void onItemSelected(
+                            android.widget.AdapterView<?> parent,
+                            android.view.View view,
+                            int position,
+                            long id) {
+
+                        showMarks(position);
+                    }
+
+                    @Override
+                    public void onNothingSelected(
+                            android.widget.AdapterView<?> parent) {
+                    }
+                }
+        );
+
+
+        go_back = findViewById(R.id.button);
+
+        go_back.setOnClickListener(vinuuuu -> {
+            Intent backilot = new Intent(
+                    ViewMarksActivity.this,
+                    MainActivity.class
+            );
+            startActivity(backilot);
+
+        });
+
+    }
+
+
+    private void showMarks(int position) {
+
+        String studentName =
+                preferences.getString(
+                        "name_" + position,
+                        ""
+                );
+
+        String internal =
+                preferences.getString(
+                        "internal_" + position,
+                        "0"
+                );
+
+        String external =
+                preferences.getString(
+                        "external_" + position,
+                        "0"
+                );
+
+        int internalMarks =
+                Integer.parseInt(internal);
+
+        int externalMarks =
+                Integer.parseInt(external);
+
+        int total =
+                internalMarks + externalMarks;
+
+        nameText.setText(
+                "Name: " + studentName
+        );
+
+        internalText.setText(
+                "Internal Marks: " + internalMarks
+        );
+
+        externalText.setText(
+                "External Marks: " + externalMarks
+        );
+
+        totalText.setText(
+                "Total Marks: " + total
+        );
+    }
+}

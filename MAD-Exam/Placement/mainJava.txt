@@ -1,0 +1,545 @@
+package com.example.placementapp;
+
+import android.app.AlertDialog;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+
+public class MainActivity extends AppCompatActivity {
+
+    TextView tvRole;
+    TextView tvEligibility;
+    EditText etCgpa;
+    CheckBox cbQualification;
+    CheckBox cbNoBacklog;
+    Button btnCheck;
+    ListView listDrives;
+
+    ArrayList<String> drives;
+    ArrayAdapter<String> adapter;
+
+    android.content.SharedPreferences preferences;
+
+    boolean officerMode = false;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+
+        tvRole = findViewById(R.id.tvRole);
+        tvEligibility = findViewById(R.id.tvEligibility);
+        etCgpa = findViewById(R.id.etCgpa);
+        cbQualification = findViewById(R.id.cbQualification);
+        cbNoBacklog = findViewById(R.id.cbNoBacklog);
+        btnCheck = findViewById(R.id.btnCheck);
+        listDrives = findViewById(R.id.listDrives);
+
+        preferences = getSharedPreferences(
+                "PlacementData",
+                MODE_PRIVATE
+        );
+
+        loadDrives();
+
+        btnCheck.setOnClickListener(v -> checkEligibility());
+
+        listDrives.setOnItemClickListener(
+                (parent, view, position, id) -> {
+
+                    if (!officerMode) {
+                        applyForDrive(position);
+                    }
+                }
+        );
+    }
+
+    // Load drives from SharedPreferences
+    private void loadDrives() {
+
+        drives = new ArrayList<>();
+
+        int count = preferences.getInt(
+                "drive_count",
+                0
+        );
+
+        for (int i = 1; i <= count; i++) {
+
+            String drive = preferences.getString(
+                    "drive_" + i,
+                    null
+            );
+
+            if (drive != null) {
+                drives.add(drive);
+            }
+        }
+
+        // Add default drives if no drives exist
+        if (drives.isEmpty()) {
+
+            saveDrive(
+                    "TCS",
+                    "Software Developer",
+                    7.0f
+            );
+
+            saveDrive(
+                    "Infosys",
+                    "System Engineer",
+                    6.5f
+            );
+
+            saveDrive(
+                    "Wipro",
+                    "Java Developer",
+                    6.0f
+            );
+
+            loadDrives();
+        }
+
+        displayDrives();
+    }
+
+    // Save company drive
+    private void saveDrive(
+            String company,
+            String role,
+            float cutoff) {
+
+        int count = preferences.getInt(
+                "drive_count",
+                0
+        );
+
+        count++;
+
+        String drive =
+                company + "|" +
+                role + "|" +
+                cutoff + "|" +
+                "0";
+
+        preferences.edit()
+                .putString(
+                        "drive_" + count,
+                        drive
+                )
+                .putInt(
+                        "drive_count",
+                        count
+                )
+                .apply();
+    }
+
+    // Display job drives
+    private void displayDrives() {
+
+        ArrayList<String> displayList =
+                new ArrayList<>();
+
+        for (String drive : drives) {
+
+            String[] data =
+                    drive.split("\\|");
+
+            if (data.length >= 4) {
+
+                String display =
+                        "Company: " + data[0]
+                                + "\nRole: " + data[1]
+                                + "\nCGPA Cutoff: " + data[2]
+                                + "\nApplicants: " + data[3];
+
+                displayList.add(display);
+            }
+        }
+
+        adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_list_item_1,
+                displayList
+        );
+
+        listDrives.setAdapter(adapter);
+    }
+
+    // Check student eligibility
+    private void checkEligibility() {
+
+        String cgpaText =
+                etCgpa.getText().toString().trim();
+
+        if (cgpaText.isEmpty()) {
+
+            tvEligibility.setText(
+                    "Please enter your CGPA"
+            );
+
+            return;
+        }
+
+        float studentCgpa =
+                Float.parseFloat(cgpaText);
+
+        if (!cbQualification.isChecked()) {
+
+            tvEligibility.setText(
+                    "Not Eligible: Qualification criteria not verified"
+            );
+
+            return;
+        }
+
+        if (!cbNoBacklog.isChecked()) {
+
+            tvEligibility.setText(
+                    "Not Eligible: Clear all active backlogs"
+            );
+
+            return;
+        }
+
+        boolean eligibleForAny = false;
+
+        for (String drive : drives) {
+
+            String[] data =
+                    drive.split("\\|");
+
+            float cutoff =
+                    Float.parseFloat(data[2]);
+
+            if (studentCgpa >= cutoff) {
+
+                eligibleForAny = true;
+                break;
+            }
+        }
+
+        if (eligibleForAny) {
+
+            tvEligibility.setText(
+                    "✓ Eligible for available drives"
+            );
+
+        } else {
+
+            tvEligibility.setText(
+                    "✗ Not eligible for the current drives"
+            );
+        }
+    }
+
+    // Student applies for a drive
+    private void applyForDrive(int position) {
+
+        String cgpaText =
+                etCgpa.getText().toString().trim();
+
+        if (cgpaText.isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    "Enter your CGPA first",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        if (!cbQualification.isChecked()
+                || !cbNoBacklog.isChecked()) {
+
+            Toast.makeText(
+                    this,
+                    "Please verify all prerequisite criteria",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        float cgpa =
+                Float.parseFloat(cgpaText);
+
+        String drive =
+                drives.get(position);
+
+        String[] data =
+                drive.split("\\|");
+
+        float cutoff =
+                Float.parseFloat(data[2]);
+
+        if (cgpa < cutoff) {
+
+            Toast.makeText(
+                    this,
+                    "You are not eligible for "
+                            + data[0],
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        // Increase applicant count
+        int applicantCount =
+                Integer.parseInt(data[3]);
+
+        applicantCount++;
+
+        data[3] =
+                String.valueOf(applicantCount);
+
+        String updatedDrive =
+                data[0] + "|" +
+                data[1] + "|" +
+                data[2] + "|" +
+                data[3];
+
+        drives.set(
+                position,
+                updatedDrive
+        );
+
+        saveAllDrives();
+
+        displayDrives();
+
+        Toast.makeText(
+                this,
+                "Application submitted to "
+                        + data[0],
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+
+    // Save all drives
+    private void saveAllDrives() {
+
+        android.content.SharedPreferences.Editor editor =
+                preferences.edit();
+
+        editor.putInt(
+                "drive_count",
+                drives.size()
+        );
+
+        for (int i = 0; i < drives.size(); i++) {
+
+            editor.putString(
+                    "drive_" + (i + 1),
+                    drives.get(i)
+            );
+        }
+
+        editor.apply();
+    }
+
+    // Create Options Menu
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(
+                R.menu.main_menu,
+                menu
+        );
+
+        return true;
+    }
+
+    // Handle menu selections
+    @Override
+    public boolean onOptionsItemSelected(
+            MenuItem item) {
+
+        if (item.getItemId()
+                == R.id.student_role) {
+
+            officerMode = false;
+
+            tvRole.setText(
+                    "Role: Student"
+            );
+
+            btnCheck.setEnabled(true);
+
+            Toast.makeText(
+                    this,
+                    "Student mode enabled",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return true;
+        }
+
+        if (item.getItemId()
+                == R.id.officer_role) {
+
+            officerMode = true;
+
+            tvRole.setText(
+                    "Role: Placement Officer"
+            );
+
+            btnCheck.setEnabled(false);
+
+            Toast.makeText(
+                    this,
+                    "Placement Officer mode enabled",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return true;
+        }
+
+        if (item.getItemId()
+                == R.id.add_drive) {
+
+            if (!officerMode) {
+
+                Toast.makeText(
+                        this,
+                        "Switch to Placement Officer role first",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                return true;
+            }
+
+            showAddDriveDialog();
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    // Dialog for officer to add a drive
+    private void showAddDriveDialog() {
+
+        final EditText companyInput =
+                new EditText(this);
+
+        companyInput.setHint(
+                "Company name"
+        );
+
+        final EditText roleInput =
+                new EditText(this);
+
+        roleInput.setHint(
+                "Job role"
+        );
+
+        final EditText cutoffInput =
+                new EditText(this);
+
+        cutoffInput.setHint(
+                "Minimum CGPA"
+        );
+
+        cutoffInput.setInputType(
+                android.text.InputType.TYPE_CLASS_NUMBER
+                        | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+        );
+
+        android.widget.LinearLayout layout =
+                new android.widget.LinearLayout(this);
+
+        layout.setOrientation(
+                android.widget.LinearLayout.VERTICAL
+        );
+
+        layout.setPadding(
+                40,
+                10,
+                40,
+                10
+        );
+
+        layout.addView(companyInput);
+        layout.addView(roleInput);
+        layout.addView(cutoffInput);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Post New Job Drive")
+                .setView(layout)
+                .setPositiveButton(
+                        "Post",
+                        (dialog, which) -> {
+
+                            String company =
+                                    companyInput
+                                            .getText()
+                                            .toString()
+                                            .trim();
+
+                            String role =
+                                    roleInput
+                                            .getText()
+                                            .toString()
+                                            .trim();
+
+                            String cutoffText =
+                                    cutoffInput
+                                            .getText()
+                                            .toString()
+                                            .trim();
+
+                            if (company.isEmpty()
+                                    || role.isEmpty()
+                                    || cutoffText.isEmpty()) {
+
+                                Toast.makeText(
+                                        this,
+                                        "Enter all details",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+
+                                return;
+                            }
+
+                            float cutoff =
+                                    Float.parseFloat(
+                                            cutoffText
+                                    );
+
+                            saveDrive(
+                                    company,
+                                    role,
+                                    cutoff
+                            );
+
+                            loadDrives();
+
+                            Toast.makeText(
+                                    this,
+                                    "Job drive posted successfully",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
+                )
+                .setNegativeButton(
+                        "Cancel",
+                        null
+                )
+                .show();
+    }
+}

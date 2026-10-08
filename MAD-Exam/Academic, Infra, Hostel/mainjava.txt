@@ -1,0 +1,328 @@
+package com.example.grievanceapp;
+
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Locale;
+
+public class MainActivity extends AppCompatActivity {
+
+    Spinner spinnerCategory;
+    EditText etDescription;
+    Button btnSubmit;
+    ListView listTickets;
+
+    ArrayList<String> tickets;
+    ArrayAdapter<String> adapter;
+
+    android.content.SharedPreferences preferences;
+
+    int ticketCount;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+
+        spinnerCategory = findViewById(R.id.spinnerCategory);
+        etDescription = findViewById(R.id.etDescription);
+        btnSubmit = findViewById(R.id.btnSubmit);
+        listTickets = findViewById(R.id.listTickets);
+
+        // Categories for Spinner
+        String[] categories = {
+                "Academic",
+                "Infrastructure",
+                "Hostel"
+        };
+
+        ArrayAdapter<String> spinnerAdapter =
+                new ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_spinner_item,
+                        categories
+                );
+
+        spinnerAdapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+
+        spinnerCategory.setAdapter(spinnerAdapter);
+
+        // SharedPreferences
+        preferences = getSharedPreferences(
+                "GrievanceData",
+                MODE_PRIVATE
+        );
+
+        // Load saved tickets
+        loadTickets();
+
+        // Submit button
+        btnSubmit.setOnClickListener(v -> submitGrievance());
+    }
+
+    // Submit a new grievance
+    private void submitGrievance() {
+
+        String category =
+                spinnerCategory.getSelectedItem().toString();
+
+        String description =
+                etDescription.getText().toString().trim();
+
+        if (description.isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    "Please enter your grievance",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        // Generate unique ticket ID
+        ticketCount++;
+
+        String ticketID =
+                "GRV" + String.format(
+                        Locale.getDefault(),
+                        "%04d",
+                        ticketCount
+                );
+
+        // Get current timestamp
+        String timestamp =
+                new SimpleDateFormat(
+                        "dd-MM-yyyy HH:mm:ss",
+                        Locale.getDefault()
+                ).format(new Date());
+
+        // Default values
+        String priority = "Normal";
+        String status = "Pending";
+
+        // Create ticket
+        String ticket =
+                ticketID + "|" +
+                category + "|" +
+                description + "|" +
+                priority + "|" +
+                status + "|" +
+                timestamp;
+
+        // Save using key-value indexing
+        preferences.edit()
+                .putString(
+                        "ticket_" + ticketCount,
+                        ticket
+                )
+                .putInt(
+                        "ticket_count",
+                        ticketCount
+                )
+                .apply();
+
+        tickets.add(ticket);
+
+        adapter.notifyDataSetChanged();
+
+        etDescription.setText("");
+
+        Toast.makeText(
+                this,
+                "Grievance submitted.\nTracking ID: "
+                        + ticketID,
+                Toast.LENGTH_LONG
+        ).show();
+    }
+
+    // Load all previously saved tickets
+    private void loadTickets() {
+
+        tickets = new ArrayList<>();
+
+        ticketCount =
+                preferences.getInt(
+                        "ticket_count",
+                        0
+                );
+
+        for (int i = 1; i <= ticketCount; i++) {
+
+            String ticket =
+                    preferences.getString(
+                            "ticket_" + i,
+                            null
+                    );
+
+            if (ticket != null) {
+                tickets.add(ticket);
+            }
+        }
+
+        displayTickets();
+    }
+
+    // Display tickets
+    private void displayTickets() {
+
+        ArrayList<String> displayList =
+                new ArrayList<>();
+
+        for (String ticket : tickets) {
+
+            String[] data = ticket.split("\\|");
+
+            if (data.length >= 6) {
+
+                String display =
+                        "Tracking ID: " + data[0]
+                                + "\nCategory: " + data[1]
+                                + "\nDescription: " + data[2]
+                                + "\nPriority: " + data[3]
+                                + "\nStatus: " + data[4]
+                                + "\nTime: " + data[5];
+
+                displayList.add(display);
+            }
+        }
+
+        adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_list_item_1,
+                displayList
+        );
+
+        listTickets.setAdapter(adapter);
+    }
+
+    // Create Options Menu
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(
+                R.menu.main_menu,
+                menu
+        );
+
+        return true;
+    }
+
+    // Handle Options Menu
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (item.getItemId() == R.id.sort_priority) {
+
+            sortByPriority();
+
+            return true;
+
+        } else if (item.getItemId() == R.id.sort_status) {
+
+            sortByStatus();
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    // Sort by priority
+    private void sortByPriority() {
+
+        Collections.sort(
+                tickets,
+                new Comparator<String>() {
+
+                    @Override
+                    public int compare(
+                            String ticket1,
+                            String ticket2) {
+
+                        String[] a =
+                                ticket1.split("\\|");
+
+                        String[] b =
+                                ticket2.split("\\|");
+
+                        return getPriorityValue(a[3])
+                                - getPriorityValue(b[3]);
+                    }
+                }
+        );
+
+        displayTickets();
+
+        Toast.makeText(
+                this,
+                "Sorted by priority",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+
+    // Priority order
+    private int getPriorityValue(String priority) {
+
+        if (priority.equals("High")) {
+            return 1;
+        }
+
+        if (priority.equals("Medium")) {
+            return 2;
+        }
+
+        return 3;
+    }
+
+    // Sort by resolution status
+    private void sortByStatus() {
+
+        Collections.sort(
+                tickets,
+                new Comparator<String>() {
+
+                    @Override
+                    public int compare(
+                            String ticket1,
+                            String ticket2) {
+
+                        String[] a =
+                                ticket1.split("\\|");
+
+                        String[] b =
+                                ticket2.split("\\|");
+
+                        return a[4].compareTo(
+                                b[4]
+                        );
+                    }
+                }
+        );
+
+        displayTickets();
+
+        Toast.makeText(
+                this,
+                "Sorted by status",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+}

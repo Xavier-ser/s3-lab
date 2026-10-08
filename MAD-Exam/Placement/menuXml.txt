@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/add_drive"
+        android:title="Post New Drive" />
+
+    <item
+        android:id="@+id/student_role"
+        android:title="Student Role" />
+
+    <item
+        android:id="@+id/officer_role"
+        android:title="Placement Officer Role" />
+
+</menu>

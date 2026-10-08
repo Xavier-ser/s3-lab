@@ -1,0 +1,173 @@
+package com.example.vehiclerental;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+public class DashboardActivity extends AppCompatActivity {
+
+    TextView tvGreeting, tvDriverDetails;
+    ListView listVehicles;
+
+    // Available vehicles
+    String[] vehicles = {
+            "Economy Car - Maruti Swift",
+            "Premium Car - Hyundai Creta",
+            "SUV - Toyota Innova",
+            "Sports Bike - Yamaha R15",
+            "Cruiser Bike - Royal Enfield Classic 350",
+            "Scooter - Honda Activa"
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_dashboard);
+
+        tvGreeting = findViewById(R.id.tvGreeting);
+        tvDriverDetails = findViewById(R.id.tvDriverDetails);
+        listVehicles = findViewById(R.id.listVehicles);
+
+        // Retrieve driver name from SharedPreferences
+        SharedPreferences preferences =
+                getSharedPreferences(
+                        "DriverData",
+                        MODE_PRIVATE
+                );
+
+        String driverName =
+                preferences.getString(
+                        "driver_name",
+                        "Driver"
+                );
+
+        // Retrieve Bundle data
+        String license =
+                getIntent().getStringExtra("license_number");
+
+        String mobile =
+                getIntent().getStringExtra("mobile_number");
+
+        // Dynamic greeting
+        tvGreeting.setText(
+                "Welcome, " + driverName + "!"
+        );
+
+        // Display driver details
+        tvDriverDetails.setText(
+                "License: " + license +
+                "\nMobile: " + mobile
+        );
+
+        // Create Android Adapter
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_list_item_1,
+                        vehicles
+                );
+
+        // Attach adapter to ListView
+        listVehicles.setAdapter(adapter);
+
+        // Normal click
+        listVehicles.setOnItemClickListener(
+                (parent, view, position, id) -> {
+
+                    String selectedVehicle =
+                            vehicles[position];
+
+                    new AlertDialog.Builder(
+                            DashboardActivity.this
+                    )
+                            .setTitle("Vehicle Selected")
+                            .setMessage(
+                                    "Would you like to rent\n\n"
+                                    + selectedVehicle + "?"
+                            )
+                            .setPositiveButton(
+                                    "Confirm",
+                                    (dialog, which) -> {
+
+                                        Toast.makeText(
+                                                DashboardActivity.this,
+                                                "Rental request confirmed for "
+                                                        + selectedVehicle,
+                                                Toast.LENGTH_LONG
+                                        ).show();
+                                    }
+                            )
+                            .setNegativeButton(
+                                    "Cancel",
+                                    null
+                            )
+                            .show();
+                }
+        );
+
+        // Enable Context Menu
+        registerForContextMenu(listVehicles);
+    }
+
+    // Create Context Menu
+    @Override
+    public void onCreateContextMenu(
+            ContextMenu menu,
+            View v,
+            ContextMenu.ContextMenuInfo menuInfo) {
+
+        super.onCreateContextMenu(
+                menu,
+                v,
+                menuInfo
+        );
+
+        menu.setHeaderTitle("Rental Information");
+
+        menu.add(
+                0,
+                1,
+                0,
+                "Terms & Insurance Policy"
+        );
+    }
+
+    // Handle Context Menu selection
+    @Override
+    public boolean onContextItemSelected(
+            MenuItem item) {
+
+        if (item.getItemId() == 1) {
+
+            // Implicit Intent to open web browser
+            Uri webpage = Uri.parse(
+                    "https://www.example.com"
+            );
+
+            Intent intent =
+                    new Intent(
+                            Intent.ACTION_VIEW,
+                            webpage
+                    );
+
+            startActivity(intent);
+
+            return true;
+        }
+
+        return super.onContextItemSelected(item);
+    }
+}

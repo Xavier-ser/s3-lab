@@ -1,0 +1,224 @@
+package com.example.smartroom;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+
+public class RoomServicesActivity extends AppCompatActivity {
+
+    TextView tvGreeting;
+    TextView tvEnvironment;
+    ListView listServices;
+
+    SharedPreferences preferences;
+
+    ArrayList<String> services;
+
+    int selectedPosition;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(
+                R.layout.activity_room_services
+        );
+
+        tvGreeting =
+                findViewById(R.id.tvGreeting);
+
+        tvEnvironment =
+                findViewById(R.id.tvEnvironment);
+
+        listServices =
+                findViewById(R.id.listServices);
+
+        preferences =
+                getSharedPreferences(
+                        "RoomPreferences",
+                        MODE_PRIVATE
+                );
+
+        displayEnvironment();
+
+        displayServices();
+
+        // Register ListView for Context Menu
+        registerForContextMenu(listServices);
+
+        // Short click
+        listServices.setOnItemClickListener(
+                (parent, view, position, id) -> {
+
+                    Toast.makeText(
+                            this,
+                            services.get(position)
+                                    + " selected",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
+        );
+    }
+
+    // Display environment metrics
+    private void displayEnvironment() {
+
+        boolean lights =
+                preferences.getBoolean(
+                        "lights",
+                        false
+                );
+
+        String acMode =
+                preferences.getString(
+                        "ac_mode",
+                        "Off"
+                );
+
+        tvGreeting.setText(
+                "Welcome to Your Smart Room!"
+        );
+
+        String environment =
+                "Room Environment\n\n"
+                        + "Lighting: "
+                        + (lights ? "ON" : "OFF")
+                        + "\n"
+                        + "Air Conditioning: "
+                        + acMode;
+
+        tvEnvironment.setText(
+                environment
+        );
+    }
+
+    // Build active services list
+    private void displayServices() {
+
+        services =
+                new ArrayList<>();
+
+        boolean towels =
+                preferences.getBoolean(
+                        "extra_towels",
+                        false
+                );
+
+        boolean water =
+                preferences.getBoolean(
+                        "mineral_water",
+                        false
+                );
+
+        boolean cleaning =
+                preferences.getBoolean(
+                        "room_cleaning",
+                        false
+                );
+
+        if (towels) {
+            services.add("Extra Towels");
+        }
+
+        if (water) {
+            services.add("Mineral Water");
+        }
+
+        if (cleaning) {
+            services.add("Room Cleaning");
+        }
+
+        if (services.isEmpty()) {
+
+            services.add(
+                    "No active room service requests"
+            );
+        }
+
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_list_item_1,
+                        services
+                );
+
+        listServices.setAdapter(adapter);
+    }
+
+    // Create Context Menu
+    @Override
+    public void onCreateContextMenu(
+            ContextMenu menu,
+            View v,
+            ContextMenu.ContextMenuInfo menuInfo) {
+
+        super.onCreateContextMenu(
+                menu,
+                v,
+                menuInfo
+        );
+
+        AdapterView.AdapterContextMenuInfo info =
+                (AdapterView.AdapterContextMenuInfo)
+                        menuInfo;
+
+        selectedPosition =
+                info.position;
+
+        menu.setHeaderTitle(
+                services.get(selectedPosition)
+        );
+
+        menu.add(
+                0,
+                1,
+                0,
+                "View Hotel Spa"
+        );
+    }
+
+    // Handle Context Menu
+    @Override
+    public boolean onContextItemSelected(
+            MenuItem item) {
+
+        if (item.getItemId() == 1) {
+
+            openSpaLocation();
+
+            return true;
+        }
+
+        return super.onContextItemSelected(item);
+    }
+
+    // Implicit Intent
+    private void openSpaLocation() {
+
+        Uri location =
+                Uri.parse(
+                        "https://www.google.com/maps/search/?api=1&query=hotel+spa"
+                );
+
+        Intent intent =
+                new Intent(
+                        Intent.ACTION_VIEW,
+                        location
+                );
+
+        startActivity(intent);
+    }
+}

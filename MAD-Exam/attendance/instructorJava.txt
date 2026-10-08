@@ -1,0 +1,193 @@
+package com.example.attendance;
+
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+public class InstructorActivity extends AppCompatActivity {
+
+    ListView studentList;
+
+    SharedPreferences preferences;
+
+    ArrayList<HashMap<String, String>> students;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_instructor);
+
+        studentList =
+                findViewById(R.id.studentList);
+
+        preferences =
+                getSharedPreferences(
+                        "AttendanceData",
+                        MODE_PRIVATE
+                );
+
+        saveStudentRoster();
+
+        loadStudents();
+    }
+
+
+    // Store student roster
+
+    private void saveStudentRoster() {
+
+        SharedPreferences.Editor editor =
+                preferences.edit();
+
+        editor.putString("student_0", "ST001 - Rahul");
+        editor.putString("student_1", "ST002 - Anu");
+        editor.putString("student_2", "ST003 - Arun");
+        editor.putString("student_3", "ST004 - Meera");
+        editor.putString("student_4", "ST005 - John");
+
+        editor.putInt("studentCount", 5);
+
+        editor.apply();
+    }
+
+
+    // Load students dynamically
+
+    private void loadStudents() {
+
+        students =
+                new ArrayList<>();
+
+        int count =
+                preferences.getInt(
+                        "studentCount",
+                        0
+                );
+
+        for (int i = 0; i < count; i++) {
+
+            String name =
+                    preferences.getString(
+                            "student_" + i,
+                            ""
+                    );
+
+            HashMap<String, String> student =
+                    new HashMap<>();
+
+            student.put(
+                    "name",
+                    name
+            );
+
+            students.add(student);
+        }
+
+
+        StudentAdapter adapter =
+                new StudentAdapter(
+                        this,
+                        students,
+                        preferences
+                );
+
+        studentList.setAdapter(adapter);
+    }
+
+
+    // Options Menu
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(
+                R.menu.attendance_menu,
+                menu
+        );
+
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(
+            MenuItem item) {
+
+        if (item.getItemId() ==
+                R.id.generateReport) {
+
+            generateAbsenteesReport();
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    private void generateAbsenteesReport() {
+
+        int count =
+                preferences.getInt(
+                        "studentCount",
+                        0
+                );
+
+        StringBuilder report =
+                new StringBuilder();
+
+        report.append("ABSENTEES REPORT\n");
+        report.append("====================\n\n");
+
+        boolean absentFound = false;
+
+
+        for (int i = 0; i < count; i++) {
+
+            boolean present =
+                    preferences.getBoolean(
+                            "present_" + i,
+                            false
+                    );
+
+            if (!present) {
+
+                String student =
+                        preferences.getString(
+                                "student_" + i,
+                                ""
+                        );
+
+                report.append(student);
+                report.append("\n");
+
+                absentFound = true;
+            }
+        }
+
+
+        if (!absentFound) {
+
+            report.append(
+                    "No absentees"
+            );
+        }
+
+
+        Toast.makeText(
+                this,
+                report.toString(),
+                Toast.LENGTH_LONG
+        ).show();
+    }
+}

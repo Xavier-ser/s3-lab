@@ -1,0 +1,124 @@
+package com.example.fitnesstracker;
+
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity {
+
+    EditText etUsername;
+    EditText etWeight;
+    Button btnSetup;
+
+    SharedPreferences preferences;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+
+        etUsername = findViewById(R.id.etUsername);
+        etWeight = findViewById(R.id.etWeight);
+        btnSetup = findViewById(R.id.btnSetup);
+
+        preferences = getSharedPreferences(
+                "FitnessData",
+                MODE_PRIVATE
+        );
+
+        btnSetup.setOnClickListener(v -> validateProfile());
+    }
+
+    private void validateProfile() {
+
+        String username =
+                etUsername.getText()
+                        .toString()
+                        .trim();
+
+        String weight =
+                etWeight.getText()
+                        .toString()
+                        .trim();
+
+        // Validate username
+        if (username.isEmpty()) {
+
+            etUsername.setError(
+                    "Username is required"
+            );
+
+            etUsername.requestFocus();
+
+            return;
+        }
+
+        // Validate target weight
+        if (weight.isEmpty()) {
+
+            etWeight.setError(
+                    "Target weight is required"
+            );
+
+            etWeight.requestFocus();
+
+            return;
+        }
+
+        // Show confirmation dialog
+        new AlertDialog.Builder(this)
+                .setTitle("Complete Setup")
+                .setMessage(
+                        "Are you sure you want to complete "
+                                + "your fitness profile?"
+                )
+                .setPositiveButton(
+                        "Confirm",
+                        (dialog, which) -> {
+
+                            saveProfile(username);
+
+                        }
+                )
+                .setNegativeButton(
+                        "Cancel",
+                        null
+                )
+                .show();
+    }
+
+    private void saveProfile(String username) {
+
+        // Save username in SharedPreferences
+        preferences.edit()
+                .putString(
+                        "username",
+                        username
+                )
+                .apply();
+
+        Toast.makeText(
+                this,
+                "Profile saved successfully",
+                Toast.LENGTH_SHORT
+        ).show();
+
+        // Explicit Intent
+        Intent intent =
+                new Intent(
+                        MainActivity.this,
+                        DashboardActivity.class
+                );
+
+        startActivity(intent);
+
+        finish();
+    }
+}

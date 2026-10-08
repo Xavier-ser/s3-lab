@@ -1,0 +1,148 @@
+package com.example.pizzashop;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class CustomizationActivity extends AppCompatActivity {
+
+    RadioGroup sizeGroup;
+
+    CheckBox cheese;
+    CheckBox mushroom;
+    CheckBox olives;
+    CheckBox chicken;
+
+    Spinner crustSpinner;
+
+    Button orderButton;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_customization);
+
+        sizeGroup =
+                findViewById(R.id.sizeGroup);
+
+        cheese =
+                findViewById(R.id.cheese);
+
+        mushroom =
+                findViewById(R.id.mushroom);
+
+        olives =
+                findViewById(R.id.olives);
+
+        chicken =
+                findViewById(R.id.chicken);
+
+        crustSpinner =
+                findViewById(R.id.crustSpinner);
+
+        orderButton =
+                findViewById(R.id.orderButton);
+
+
+        // Spinner values
+
+        String[] crusts = {
+                "Thin - ₹0",
+                "Cheese Burst - ₹60",
+                "Pan - ₹40"
+        };
+
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_spinner_item,
+                        crusts
+                );
+
+        adapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+
+        crustSpinner.setAdapter(adapter);
+
+
+        orderButton.setOnClickListener(v -> {
+
+            int selectedSize =
+                    sizeGroup.getCheckedRadioButtonId();
+
+            if (selectedSize == -1) {
+
+                Toast.makeText(
+                        this,
+                        "Please select pizza size",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                return;
+            }
+
+            RadioButton selectedRadio =
+                    findViewById(selectedSize);
+
+            String size =
+                    selectedRadio.getText().toString();
+
+
+            // Store selected size
+
+            getSharedPreferences(
+                    "PizzaOrder",
+                    MODE_PRIVATE
+            ).edit()
+                    .putString("size", size)
+                    .putBoolean(
+                            "cheese",
+                            cheese.isChecked()
+                    )
+                    .putBoolean(
+                            "mushroom",
+                            mushroom.isChecked()
+                    )
+                    .putBoolean(
+                            "olives",
+                            olives.isChecked()
+                    )
+                    .putBoolean(
+                            "chicken",
+                            chicken.isChecked()
+                    )
+                    .putString(
+                            "crust",
+                            crustSpinner
+                                    .getSelectedItem()
+                                    .toString()
+                    )
+                    .apply();
+
+
+            Toast.makeText(
+                    this,
+                    "Pizza customized successfully",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            Intent intent =
+                    new Intent(
+                            CustomizationActivity.this,
+                            ViewOrderActivity.class
+                    );
+
+            startActivity(intent);
+        });
+    }
+}

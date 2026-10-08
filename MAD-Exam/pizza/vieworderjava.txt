@@ -1,0 +1,163 @@
+package com.example.pizzashop;
+
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class ViewOrderActivity extends AppCompatActivity {
+
+    TextView orderText;
+    TextView totalText;
+
+    SharedPreferences preferences;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_view_order);
+
+        orderText =
+                findViewById(R.id.orderText);
+
+        totalText =
+                findViewById(R.id.totalText);
+
+        preferences =
+                getSharedPreferences(
+                        "PizzaOrder",
+                        MODE_PRIVATE
+                );
+
+        showOrder();
+    }
+
+    private void showOrder() {
+
+        String size =
+                preferences.getString(
+                        "size",
+                        "Not Selected"
+                );
+
+        boolean cheese =
+                preferences.getBoolean(
+                        "cheese",
+                        false
+                );
+
+        boolean mushroom =
+                preferences.getBoolean(
+                        "mushroom",
+                        false
+                );
+
+        boolean olives =
+                preferences.getBoolean(
+                        "olives",
+                        false
+                );
+
+        boolean chicken =
+                preferences.getBoolean(
+                        "chicken",
+                        false
+                );
+
+        String crust =
+                preferences.getString(
+                        "crust",
+                        "Not Selected"
+                );
+
+
+        int total = 0;
+
+        StringBuilder order =
+                new StringBuilder();
+
+        order.append("PIZZA ORDER\n");
+        order.append("====================\n\n");
+
+
+        // Size price
+
+        if (size.startsWith("Small")) {
+
+            total += 150;
+
+        } else if (size.startsWith("Medium")) {
+
+            total += 200;
+
+        } else if (size.startsWith("Large")) {
+
+            total += 250;
+        }
+
+        order.append("Size: ")
+                .append(size)
+                .append("\n");
+
+
+        // Toppings
+
+        order.append("\nToppings:\n");
+
+        if (cheese) {
+
+            order.append("Cheese - ₹30\n");
+
+            total += 30;
+        }
+
+        if (mushroom) {
+
+            order.append("Mushroom - ₹40\n");
+
+            total += 40;
+        }
+
+        if (olives) {
+
+            order.append("Olives - ₹25\n");
+
+            total += 25;
+        }
+
+        if (chicken) {
+
+            order.append("Chicken - ₹50\n");
+
+            total += 50;
+        }
+
+
+        // Crust
+
+        order.append("\nCrust: ")
+                .append(crust)
+                .append("\n");
+
+
+        if (crust.startsWith("Cheese Burst")) {
+
+            total += 60;
+
+        } else if (crust.startsWith("Pan")) {
+
+            total += 40;
+        }
+
+
+        order.append("\n====================\n");
+
+        orderText.setText(order.toString());
+
+        totalText.setText(
+                "TOTAL: ₹" + total
+        );
+    }
+}

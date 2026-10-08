@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Placement Coordination System"
+        android:textSize="23sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:padding="10dp" />
+
+    <TextView
+        android:id="@+id/tvRole"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Role: Student"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:padding="8dp" />
+
+    <EditText
+        android:id="@+id/etCgpa"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter your CGPA"
+        android:inputType="numberDecimal" />
+
+    <CheckBox
+        android:id="@+id/cbQualification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="I meet the required qualification" />
+
+    <CheckBox
+        android:id="@+id/cbNoBacklog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="I have no active backlogs" />
+
+    <Button
+        android:id="@+id/btnCheck"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Check Eligibility" />
+
+    <TextView
+        android:id="@+id/tvEligibility"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Eligibility status will appear here"
+        android:textSize="16sp"
+        android:padding="10dp" />
+
+    <ListView
+        android:id="@+id/listDrives"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

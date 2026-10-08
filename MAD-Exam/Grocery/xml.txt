@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Grocery Billing"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="20dp"/>
+
+
+    <!-- Rice -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Rice - ₹60"
+        android:textSize="18sp"/>
+
+    <EditText
+        android:id="@+id/riceQty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Rice Quantity"
+        android:inputType="number"/>
+
+
+    <!-- Sugar -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sugar - ₹45"
+        android:textSize="18sp"
+        android:layout_marginTop="10dp"/>
+
+    <EditText
+        android:id="@+id/sugarQty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Sugar Quantity"
+        android:inputType="number"/>
+
+
+    <!-- Milk -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Milk - ₹30"
+        android:textSize="18sp"
+        android:layout_marginTop="10dp"/>
+
+    <EditText
+        android:id="@+id/milkQty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Milk Quantity"
+        android:inputType="number"/>
+
+
+    <!-- Bread -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bread - ₹40"
+        android:textSize="18sp"
+        android:layout_marginTop="10dp"/>
+
+    <EditText
+        android:id="@+id/breadQty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Bread Quantity"
+        android:inputType="number"/>
+
+
+    <!-- Oil -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Oil - ₹120"
+        android:textSize="18sp"
+        android:layout_marginTop="10dp"/>
+
+    <EditText
+        android:id="@+id/oilQty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter Oil Quantity"
+        android:inputType="number"/>
+
+
+    <Button
+        android:id="@+id/generateBill"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="GENERATE BILL"
+        android:layout_marginTop="15dp"/>
+
+
+    <!-- Scrollable Bill -->
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="15dp">
+
+        <TextView
+            android:id="@+id/billText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bill will appear here"
+            android:textSize="18sp"
+            android:padding="10dp"/>
+
+    </ScrollView>
+
+</LinearLayout>

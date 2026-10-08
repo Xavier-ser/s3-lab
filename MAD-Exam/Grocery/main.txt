@@ -1,0 +1,164 @@
+package com.example.grocerybilling;
+
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity {
+
+    EditText riceQty, sugarQty, milkQty, breadQty, oilQty;
+
+    Button generateBill;
+
+    TextView billText;
+
+    SharedPreferences preferences;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+
+        riceQty = findViewById(R.id.riceQty);
+        sugarQty = findViewById(R.id.sugarQty);
+        milkQty = findViewById(R.id.milkQty);
+        breadQty = findViewById(R.id.breadQty);
+        oilQty = findViewById(R.id.oilQty);
+
+        generateBill = findViewById(R.id.generateBill);
+
+        billText = findViewById(R.id.billText);
+
+        // Create SharedPreferences
+        preferences = getSharedPreferences(
+                "GroceryData",
+                MODE_PRIVATE
+        );
+
+        // Store item names and prices
+        saveItems();
+
+        generateBill.setOnClickListener(v -> generateBill());
+    }
+
+    private void saveItems() {
+
+        SharedPreferences.Editor editor =
+                preferences.edit();
+
+        editor.putString("item1", "Rice");
+        editor.putInt("price1", 60);
+
+        editor.putString("item2", "Sugar");
+        editor.putInt("price2", 45);
+
+        editor.putString("item3", "Milk");
+        editor.putInt("price3", 30);
+
+        editor.putString("item4", "Bread");
+        editor.putInt("price4", 40);
+
+        editor.putString("item5", "Oil");
+        editor.putInt("price5", 120);
+
+        editor.apply();
+    }
+
+    private void generateBill() {
+
+        int rice = getQuantity(riceQty);
+        int sugar = getQuantity(sugarQty);
+        int milk = getQuantity(milkQty);
+        int bread = getQuantity(breadQty);
+        int oil = getQuantity(oilQty);
+
+        int ricePrice = preferences.getInt("price1", 0);
+        int sugarPrice = preferences.getInt("price2", 0);
+        int milkPrice = preferences.getInt("price3", 0);
+        int breadPrice = preferences.getInt("price4", 0);
+        int oilPrice = preferences.getInt("price5", 0);
+
+        int total = 0;
+
+        StringBuilder bill = new StringBuilder();
+
+        bill.append("          GROCERY BILL\n");
+        bill.append("==============================\n\n");
+
+        if (rice > 0) {
+            int cost = rice * ricePrice;
+
+            bill.append("Rice\n");
+            bill.append("Quantity: ").append(rice).append("\n");
+            bill.append("Unit Price: ₹").append(ricePrice).append("\n");
+            bill.append("Amount: ₹").append(cost).append("\n\n");
+
+            total += cost;
+        }
+
+        if (sugar > 0) {
+            int cost = sugar * sugarPrice;
+
+            bill.append("Sugar\n");
+            bill.append("Quantity: ").append(sugar).append("\n");
+            bill.append("Unit Price: ₹").append(sugarPrice).append("\n");
+            bill.append("Amount: ₹").append(cost).append("\n\n");
+
+            total += cost;
+        }
+
+        if (milk > 0) {
+            int cost = milk * milkPrice;
+
+            bill.append("Milk\n");
+            bill.append("Quantity: ").append(milk).append("\n");
+            bill.append("Unit Price: ₹").append(milkPrice).append("\n");
+            bill.append("Amount: ₹").append(cost).append("\n\n");
+
+            total += cost;
+        }
+
+        if (bread > 0) {
+            int cost = bread * breadPrice;
+
+            bill.append("Bread\n");
+            bill.append("Quantity: ").append(bread).append("\n");
+            bill.append("Unit Price: ₹").append(breadPrice).append("\n");
+            bill.append("Amount: ₹").append(cost).append("\n\n");
+
+            total += cost;
+        }
+
+        if (oil > 0) {
+            int cost = oil * oilPrice;
+
+            bill.append("Oil\n");
+            bill.append("Quantity: ").append(oil).append("\n");
+            bill.append("Unit Price: ₹").append(oilPrice).append("\n");
+            bill.append("Amount: ₹").append(cost).append("\n\n");
+
+            total += cost;
+        }
+
+        bill.append("==============================\n");
+        bill.append("GRAND TOTAL: ₹").append(total);
+
+        billText.setText(bill.toString());
+    }
+
+    private int getQuantity(EditText editText) {
+
+        String value = editText.getText().toString();
+
+        if (value.isEmpty()) {
+            return 0;
+        }
+
+        return Integer.parseInt(value);
+    }
+}

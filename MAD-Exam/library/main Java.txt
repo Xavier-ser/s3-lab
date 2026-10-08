@@ -1,0 +1,229 @@
+package com.example.elibrary;
+
+import android.app.AlertDialog;
+import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity {
+
+    ListView bookList;
+    TextView tvAvailable;
+
+    String[] books = {
+            "Java Programming",
+            "Android Development",
+            "Database Management",
+            "Computer Networks",
+            "Operating Systems"
+    };
+
+    String[] authors = {
+            "Herbert Schildt",
+            "Bill Phillips",
+            "Raghu Ramakrishnan",
+            "Andrew S. Tanenbaum",
+            "Silberschatz"
+    };
+
+    boolean[] reserved = new boolean[books.length];
+
+    int selectedBook;
+
+    android.content.SharedPreferences preferences;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+
+        bookList = findViewById(R.id.bookList);
+        tvAvailable = findViewById(R.id.tvAvailable);
+
+        preferences = getSharedPreferences("LibraryData", MODE_PRIVATE);
+
+        loadReservations();
+
+        updateBookList();
+
+        // Register ListView for Context Menu
+        registerForContextMenu(bookList);
+    }
+
+    // Load previously reserved books
+    private void loadReservations() {
+
+        for (int i = 0; i < books.length; i++) {
+
+            reserved[i] = preferences.getBoolean(
+                    "book_" + i,
+                    false
+            );
+        }
+    }
+
+    // Display books in ListView
+    private void updateBookList() {
+
+        String[] displayBooks = new String[books.length];
+
+        for (int i = 0; i < books.length; i++) {
+
+            if (reserved[i]) {
+
+                displayBooks[i] =
+                        books[i] + "\nReserved";
+            } else {
+
+                displayBooks[i] =
+                        books[i] + "\nAvailable";
+            }
+        }
+
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_list_item_1,
+                        displayBooks
+                );
+
+        bookList.setAdapter(adapter);
+
+        updateAvailableCount();
+    }
+
+    // Update available book count
+    private void updateAvailableCount() {
+
+        int count = 0;
+
+        for (boolean bookReserved : reserved) {
+
+            if (!bookReserved) {
+                count++;
+            }
+        }
+
+        tvAvailable.setText(
+                "Available Books: " + count
+        );
+    }
+
+    // Create Context Menu
+    @Override
+    public void onCreateContextMenu(
+            ContextMenu menu,
+            View v,
+            ContextMenu.ContextMenuInfo menuInfo) {
+
+        super.onCreateContextMenu(
+                menu,
+                v,
+                menuInfo
+        );
+
+        menu.setHeaderTitle("Book Options");
+
+        menu.add(0, 1, 0, "View Details");
+        menu.add(0, 2, 1, "Reserve Book");
+        menu.add(0, 3, 2, "Add to Wishlist");
+
+        android.widget.AdapterView.AdapterContextMenuInfo info =
+                (android.widget.AdapterView.AdapterContextMenuInfo) menuInfo;
+
+        selectedBook = info.position;
+    }
+
+    // Handle Context Menu selections
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+
+        if (item.getItemId() == 1) {
+
+            showBookDetails();
+
+            return true;
+
+        } else if (item.getItemId() == 2) {
+
+            reserveBook();
+
+            return true;
+
+        } else if (item.getItemId() == 3) {
+
+            Toast.makeText(
+                    this,
+                    books[selectedBook] + " added to Wishlist",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return true;
+        }
+
+        return super.onContextItemSelected(item);
+    }
+
+    // Show book details
+    private void showBookDetails() {
+
+        String status;
+
+        if (reserved[selectedBook]) {
+            status = "Reserved";
+        } else {
+            status = "Available";
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(books[selectedBook])
+                .setMessage(
+                        "Author: " + authors[selectedBook]
+                                + "\n\nStatus: " + status
+                )
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+    // Reserve selected book
+    private void reserveBook() {
+
+        if (reserved[selectedBook]) {
+
+            Toast.makeText(
+                    this,
+                    "Book is already reserved",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        reserved[selectedBook] = true;
+
+        // Save reservation
+        preferences.edit()
+                .putBoolean(
+                        "book_" + selectedBook,
+                        true
+                )
+                .apply();
+
+        Toast.makeText(
+                this,
+                books[selectedBook] + " reserved successfully",
+                Toast.LENGTH_SHORT
+        ).show();
+
+        // Refresh UI
+        updateBookList();
+    }
+}

@@ -1,0 +1,158 @@
+package com.example.attendance;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.Switch;
+import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+public class StudentAdapter extends BaseAdapter {
+
+    Context context;
+
+    ArrayList<HashMap<String, String>> students;
+
+    SharedPreferences preferences;
+
+    LayoutInflater inflater;
+
+
+    public StudentAdapter(
+            Context context,
+            ArrayList<HashMap<String, String>> students,
+            SharedPreferences preferences) {
+
+        this.context = context;
+        this.students = students;
+        this.preferences = preferences;
+
+        inflater =
+                LayoutInflater.from(context);
+    }
+
+
+    @Override
+    public int getCount() {
+
+        return students.size();
+    }
+
+
+    @Override
+    public Object getItem(int position) {
+
+        return students.get(position);
+    }
+
+
+    @Override
+    public long getItemId(int position) {
+
+        return position;
+    }
+
+
+    @Override
+    public View getView(
+            int position,
+            View convertView,
+            ViewGroup parent) {
+
+        if (convertView == null) {
+
+            convertView =
+                    inflater.inflate(
+                            R.layout.student_row,
+                            parent,
+                            false
+                    );
+        }
+
+
+        TextView name =
+                convertView.findViewById(
+                        R.id.studentName
+                );
+
+        Switch attendanceSwitch =
+                convertView.findViewById(
+                        R.id.attendanceSwitch
+                );
+
+
+        String studentName =
+                students.get(position)
+                        .get("name");
+
+
+        name.setText(studentName);
+
+
+        boolean present =
+                preferences.getBoolean(
+                        "present_" + position,
+                        false
+                );
+
+
+        attendanceSwitch.setOnCheckedChangeListener(
+                null
+        );
+
+        attendanceSwitch.setChecked(
+                present
+        );
+
+
+        if (present) {
+
+            attendanceSwitch.setText(
+                    "Present"
+            );
+
+        } else {
+
+            attendanceSwitch.setText(
+                    "Absent"
+            );
+        }
+
+
+        attendanceSwitch
+                .setOnCheckedChangeListener(
+                        (buttonView, isChecked) -> {
+
+                            preferences.edit()
+                                    .putBoolean(
+                                            "present_" + position,
+                                            isChecked
+                                    )
+                                    .apply();
+
+
+                            if (isChecked) {
+
+                                attendanceSwitch.setText(
+                                        "Present"
+                                );
+
+                            } else {
+
+                                attendanceSwitch.setText(
+                                        "Absent"
+                                );
+                            }
+                        }
+                );
+
+
+        return convertView;
+    }
+}

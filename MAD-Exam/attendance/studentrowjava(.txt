@@ -1,0 +1,101 @@
+package com.example.attendance;
+
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class StudentActivity extends AppCompatActivity {
+
+    TextView attendanceText;
+
+    SharedPreferences preferences;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_student);
+
+        attendanceText =
+                findViewById(R.id.attendanceText);
+
+        preferences =
+                getSharedPreferences(
+                        "AttendanceData",
+                        MODE_PRIVATE
+                );
+
+        showAttendance();
+    }
+
+
+    private void showAttendance() {
+
+        int count =
+                preferences.getInt(
+                        "studentCount",
+                        0
+                );
+
+
+        // For demo, student is ST001
+
+        int studentPosition = 0;
+
+
+        String studentName =
+                preferences.getString(
+                        "student_" + studentPosition,
+                        "Student"
+                );
+
+
+        int presentCount = 0;
+
+
+        // Count Present records
+
+        for (int i = 0; i < count; i++) {
+
+            boolean present =
+                    preferences.getBoolean(
+                            "present_" + i,
+                            false
+                    );
+
+            if (present) {
+
+                presentCount++;
+            }
+        }
+
+
+        double percentage = 0;
+
+
+        if (count > 0) {
+
+            percentage =
+                    (presentCount * 100.0)
+                            / count;
+        }
+
+
+        attendanceText.setText(
+                "Student: " + studentName
+                        + "\n\n"
+                        + "Total Students: " + count
+                        + "\n\n"
+                        + "Present Records: "
+                        + presentCount
+                        + "\n\n"
+                        + "Attendance Percentage: "
+                        + String.format(
+                                "%.2f%%",
+                                percentage
+                        )
+        );
+    }
+}

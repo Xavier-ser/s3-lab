@@ -1,0 +1,127 @@
+package com.example.vehiclerental;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity {
+
+    EditText etName, etLicense, etMobile;
+    Button btnContinue;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+
+        etName = findViewById(R.id.etName);
+        etLicense = findViewById(R.id.etLicense);
+        etMobile = findViewById(R.id.etMobile);
+        btnContinue = findViewById(R.id.btnContinue);
+
+        btnContinue.setOnClickListener(v -> {
+
+            // Read input values
+            String name = etName.getText().toString().trim();
+            String license = etLicense.getText().toString().trim();
+            String mobile = etMobile.getText().toString().trim();
+
+            // Validate name
+            if (name.isEmpty()) {
+                etName.setError("Enter driver's full name");
+                etName.requestFocus();
+                return;
+            }
+
+            // Validate license
+            if (license.isEmpty()) {
+                etLicense.setError("Enter driving license number");
+                etLicense.requestFocus();
+                return;
+            }
+
+            // Validate mobile
+            if (mobile.isEmpty()) {
+                etMobile.setError("Enter mobile number");
+                etMobile.requestFocus();
+                return;
+            }
+
+            // Validate mobile number
+            if (!mobile.matches("\\d{10}")) {
+                etMobile.setError("Enter a valid 10-digit mobile number");
+                etMobile.requestFocus();
+                return;
+            }
+
+            // Save driver's name using SharedPreferences
+            SharedPreferences preferences =
+                    getSharedPreferences("DriverData", MODE_PRIVATE);
+
+            SharedPreferences.Editor editor =
+                    preferences.edit();
+
+            editor.putString("driver_name", name);
+            editor.apply();
+
+            // Store remaining information in Bundle
+            Bundle bundle = new Bundle();
+
+            bundle.putString("license_number", license);
+            bundle.putString("mobile_number", mobile);
+
+            // Explicit Intent
+            Intent intent =
+                    new Intent(
+                            MainActivity.this,
+                            DashboardActivity.class
+                    );
+
+            intent.putExtras(bundle);
+
+            startActivity(intent);
+        });
+    }
+
+    // Create Options Menu
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(
+                R.menu.main_menu,
+                menu
+        );
+
+        return true;
+    }
+
+    // Handle Options Menu
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (item.getItemId() == R.id.menu_clear) {
+
+            etName.setText("");
+            etLicense.setText("");
+            etMobile.setText("");
+
+            Toast.makeText(
+                    this,
+                    "Form cleared",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+}

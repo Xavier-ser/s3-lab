@@ -1,0 +1,78 @@
+package com.example.facultyleave;
+
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class StatusActivity extends AppCompatActivity {
+
+    TextView statusText;
+
+    SharedPreferences preferences;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_status);
+
+        statusText =
+                findViewById(R.id.statusText);
+
+        preferences =
+                getSharedPreferences(
+                        "LeaveData",
+                        MODE_PRIVATE
+                );
+
+        showStatus();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (preferences != null) {
+            showStatus();
+        }
+    }
+
+    private void showStatus() {
+
+        String date =
+                preferences.getString(
+                        "leaveDate",
+                        "No application"
+                );
+
+        String type =
+                preferences.getString(
+                        "leaveType",
+                        "-"
+                );
+
+        String reason =
+                preferences.getString(
+                        "reason",
+                        "-"
+                );
+
+        String status =
+                preferences.getString(
+                        "status",
+                        "No application"
+                );
+
+        statusText.setText(
+                "Leave Date: " + date
+                        + "\n\n"
+                        + "Leave Type: " + type
+                        + "\n\n"
+                        + "Reason: " + reason
+                        + "\n\n"
+                        + "Status: " + status
+        );
+    }
+}

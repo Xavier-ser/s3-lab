@@ -1,0 +1,132 @@
+package com.example.smartroom;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.RadioButton;
+import android.widget.Switch;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity {
+
+    Switch switchLight;
+
+    RadioButton radioCool;
+    RadioButton radioEco;
+    RadioButton radioOff;
+
+    CheckBox checkTowels;
+    CheckBox checkWater;
+    CheckBox checkCleaning;
+
+    Button btnSave;
+
+    SharedPreferences preferences;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+
+        switchLight = findViewById(R.id.switchLight);
+
+        radioCool = findViewById(R.id.radioCool);
+        radioEco = findViewById(R.id.radioEco);
+        radioOff = findViewById(R.id.radioOff);
+
+        checkTowels = findViewById(R.id.checkTowels);
+        checkWater = findViewById(R.id.checkWater);
+        checkCleaning = findViewById(R.id.checkCleaning);
+
+        btnSave = findViewById(R.id.btnSave);
+
+        // SharedPreferences
+        preferences = getSharedPreferences(
+                "RoomPreferences",
+                MODE_PRIVATE
+        );
+
+        btnSave.setOnClickListener(v -> savePreferences());
+    }
+
+    private void savePreferences() {
+
+        // Lighting preference
+        boolean lights =
+                switchLight.isChecked();
+
+        // AC preference
+        String acMode = "Off";
+
+        if (radioCool.isChecked()) {
+            acMode = "Cool";
+        }
+        else if (radioEco.isChecked()) {
+            acMode = "Eco";
+        }
+        else if (radioOff.isChecked()) {
+            acMode = "Off";
+        }
+
+        // Amenity preferences
+        boolean towels =
+                checkTowels.isChecked();
+
+        boolean water =
+                checkWater.isChecked();
+
+        boolean cleaning =
+                checkCleaning.isChecked();
+
+        // Save all preferences
+        SharedPreferences.Editor editor =
+                preferences.edit();
+
+        editor.putBoolean(
+                "lights",
+                lights
+        );
+
+        editor.putString(
+                "ac_mode",
+                acMode
+        );
+
+        editor.putBoolean(
+                "extra_towels",
+                towels
+        );
+
+        editor.putBoolean(
+                "mineral_water",
+                water
+        );
+
+        editor.putBoolean(
+                "room_cleaning",
+                cleaning
+        );
+
+        editor.apply();
+
+        Toast.makeText(
+                this,
+                "Room preferences saved",
+                Toast.LENGTH_SHORT
+        ).show();
+
+        // Explicit Intent
+        Intent intent =
+                new Intent(
+                        MainActivity.this,
+                        RoomServicesActivity.class
+                );
+
+        startActivity(intent);
+    }
+}

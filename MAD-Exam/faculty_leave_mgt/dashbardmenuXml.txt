@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/applyLeave"
+        android:title="Apply Leave"
+        android:showAsAction="never"/>
+
+    <item
+        android:id="@+id/checkStatus"
+        android:title="Check Status"
+        android:showAsAction="never"/>
+
+    <item
+        android:id="@+id/leaveBalance"
+        android:title="Leave Balance"
+        android:showAsAction="never"/>
+
+</menu>

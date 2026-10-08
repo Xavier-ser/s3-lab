@@ -1,0 +1,117 @@
+package com.example.quizapp;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity {
+
+    EditText username, password;
+    RadioGroup roleGroup;
+    Button loginButton;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        username = findViewById(R.id.username);
+        password = findViewById(R.id.password);
+        roleGroup = findViewById(R.id.roleGroup);
+        loginButton = findViewById(R.id.loginButton);
+
+        loginButton.setOnClickListener(v -> {
+
+            String user = username.getText().toString().trim();
+            String pass = password.getText().toString().trim();
+
+            int selectedId = roleGroup.getCheckedRadioButtonId();
+
+            if (user.isEmpty() || pass.isEmpty()) {
+                Toast.makeText(
+                        MainActivity.this,
+                        "Enter username and password",
+                        Toast.LENGTH_SHORT
+                ).show();
+                return;
+            }
+
+            if (selectedId == -1) {
+                Toast.makeText(
+                        MainActivity.this,
+                        "Select Student or Creator",
+                        Toast.LENGTH_SHORT
+                ).show();
+                return;
+            }
+
+            RadioButton selectedRole =
+                    findViewById(selectedId);
+
+            String role = selectedRole.getText().toString();
+
+            // CREATOR LOGIN
+            if (role.equals("Creator")) {
+
+                if (user.equals("creator") && pass.equals("1234")) {
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            "Creator Login Successful",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    Intent intent = new Intent(
+                            MainActivity.this,
+                            CreatorActivity.class
+                    );
+
+                    startActivity(intent);
+
+                } else {
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            "Invalid Creator username or password",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
+
+            }
+
+            // STUDENT LOGIN
+            else if (role.equals("Student")) {
+
+                if (user.equals("student") && pass.equals("1234")) {
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            "Student Login Successful",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    Intent intent = new Intent(
+                            MainActivity.this,
+                            QuizActivity.class
+                    );
+
+                    startActivity(intent);
+
+                } else {
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            "Invalid Student username or password",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
+            }
+        });
+    }
+}

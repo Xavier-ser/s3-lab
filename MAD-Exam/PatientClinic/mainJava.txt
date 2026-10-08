@@ -1,0 +1,127 @@
+package com.example.patientclinic;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity {
+
+    EditText etName, etAge, etTokenDate;
+    Button btnSubmit;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+
+        etName = findViewById(R.id.etName);
+        etAge = findViewById(R.id.etAge);
+        etTokenDate = findViewById(R.id.etTokenDate);
+        btnSubmit = findViewById(R.id.btnSubmit);
+
+        btnSubmit.setOnClickListener(v -> {
+
+            String name = etName.getText().toString().trim();
+            String age = etAge.getText().toString().trim();
+            String tokenDate = etTokenDate.getText().toString().trim();
+
+            // Runtime validation
+            if (name.isEmpty()) {
+                etName.setError("Enter patient's full name");
+                etName.requestFocus();
+                return;
+            }
+
+            if (age.isEmpty()) {
+                etAge.setError("Enter patient's age");
+                etAge.requestFocus();
+                return;
+            }
+
+            if (tokenDate.isEmpty()) {
+                etTokenDate.setError("Enter preferred token/date");
+                etTokenDate.requestFocus();
+                return;
+            }
+
+            // Validate age
+            int ageValue;
+
+            try {
+                ageValue = Integer.parseInt(age);
+
+                if (ageValue <= 0 || ageValue > 120) {
+                    etAge.setError("Enter a valid age between 1 and 120");
+                    etAge.requestFocus();
+                    return;
+                }
+
+            } catch (NumberFormatException e) {
+                etAge.setError("Enter a valid age");
+                etAge.requestFocus();
+                return;
+            }
+
+            // Save patient name using SharedPreferences
+            SharedPreferences preferences =
+                    getSharedPreferences("PatientData", MODE_PRIVATE);
+
+            SharedPreferences.Editor editor = preferences.edit();
+
+            editor.putString("patient_name", name);
+            editor.apply();
+
+            // Bundle remaining information
+            Bundle bundle = new Bundle();
+            bundle.putInt("patient_age", ageValue);
+            bundle.putString("token_date", tokenDate);
+
+            // Explicit Intent
+            Intent intent =
+                    new Intent(MainActivity.this, DashboardActivity.class);
+
+            intent.putExtras(bundle);
+
+            startActivity(intent);
+        });
+    }
+
+    // Create Options Menu
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+
+        return true;
+    }
+
+    // Handle menu item
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (item.getItemId() == R.id.menu_clear) {
+
+            etName.setText("");
+            etAge.setText("");
+            etTokenDate.setText("");
+
+            Toast.makeText(
+                    this,
+                    "Form cleared",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+}
