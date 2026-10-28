@@ -1,10 +1,10 @@
-"""Converted from svm.ipynb."""
+# """Converted from svm.ipynb."""
 
-supervised learning algo-> classification(linear and non-linear)
-used for regression prblm
-used for outlier detection task
+# supervised learning algo-> classification(linear and non-linear)
+# used for regression prblm
+# used for outlier detection task
 
-appln- sentimental analysis, image recognition and classification, handwriting identifications,spam detection, face cdetection anomaly det4ectin gene exprression analysis
+# appln- sentimental analysis, image recognition and classification, handwriting identifications,spam detection, face cdetection anomaly det4ectin gene exprression analysis
 
 # svm linear: 2d surface, a straight line that classifies data points,
 # also called max margin linear classifier- setting max margin
